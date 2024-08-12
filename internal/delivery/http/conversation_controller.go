@@ -1,6 +1,7 @@
 package http
 
 import (
+	e "chat-service/internal/exception"
 	"chat-service/internal/model"
 	"chat-service/internal/service"
 	"github.com/gofiber/fiber/v2"
@@ -17,12 +18,12 @@ func NewConversationHandler(service service.ConversationService) *ConversationHa
 func (h *ConversationHandler) CreateConversation(c *fiber.Ctx) error {
 	conversationDTO := new(model.CreateConversationRequest)
 	if err := c.BodyParser(conversationDTO); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return e.Validation(err)
 	}
 
 	conversation, err := h.ConversationService.CreateConversation(conversationDTO)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(conversation)
@@ -36,7 +37,7 @@ func (h *ConversationHandler) GetConversationByID(c *fiber.Ctx) error {
 
 	conversation, err := h.ConversationService.GetConversationByID(uint(conversationID))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	return c.JSON(conversation)
@@ -45,7 +46,7 @@ func (h *ConversationHandler) GetConversationByID(c *fiber.Ctx) error {
 func (h *ConversationHandler) GetAllConversations(c *fiber.Ctx) error {
 	conversations, err := h.ConversationService.GetAllConversations()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	return c.JSON(conversations)

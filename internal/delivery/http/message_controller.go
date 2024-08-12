@@ -1,6 +1,7 @@
 package http
 
 import (
+	e "chat-service/internal/exception"
 	"chat-service/internal/model"
 	"chat-service/internal/service"
 	"github.com/gofiber/fiber/v2"
@@ -15,14 +16,14 @@ func NewMessageController(service service.MessageService) *MessageController {
 }
 
 func (h *MessageController) CreateMessage(c *fiber.Ctx) error {
-	messageDTO := new(model.CreateMessageRequest)
-	if err := c.BodyParser(messageDTO); err != nil {
+	request := new(model.CreateMessageRequest)
+	if err := c.BodyParser(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	message, err := h.MessageService.CreateMessage(messageDTO)
+	message, err := h.MessageService.CreateMessage(request)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(message)
@@ -31,12 +32,12 @@ func (h *MessageController) CreateMessage(c *fiber.Ctx) error {
 func (h *MessageController) GetMessages(c *fiber.Ctx) error {
 	conversationID, err := c.ParamsInt("conversationID")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid conversation ID"})
+		return e.Validation(err)
 	}
 
 	messages, err := h.MessageService.GetMessages(int64(conversationID))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	return c.JSON(messages)

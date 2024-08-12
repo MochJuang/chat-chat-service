@@ -5,6 +5,7 @@ import (
 	e "chat-service/internal/exception"
 	"chat-service/internal/model"
 	"chat-service/internal/repository"
+	"chat-service/internal/utils"
 	"time"
 )
 
@@ -22,15 +23,20 @@ func NewMessageService(repo repository.MessageRepository) MessageService {
 }
 
 func (s *messageService) CreateMessage(request *model.CreateMessageRequest) (*model.MessageResponse, error) {
-	var conversation entity.Conversation
 
+	err := utils.Validate(request)
+	if err != nil {
+		return nil, err
+	}
+
+	var conversation entity.Conversation
 	message := &entity.Message{
 		ConversationID: conversation.ID,
 		SenderID:       request.UserID,
 		Content:        request.Content,
 		SendAt:         time.Now(),
 	}
-	err := s.messageRepo.SaveMessage(message)
+	err = s.messageRepo.SaveMessage(message)
 	if err != nil {
 		return nil, e.Internal(err)
 	}

@@ -5,6 +5,7 @@ import (
 	e "chat-service/internal/exception"
 	"chat-service/internal/model"
 	"chat-service/internal/repository"
+	"chat-service/internal/utils"
 	"time"
 )
 
@@ -23,6 +24,11 @@ func NewConversationService(repo repository.ConversationRepository) Conversation
 }
 
 func (s *conversationService) CreateConversation(request *model.CreateConversationRequest) (*model.ConversationResponse, error) {
+	err := utils.Validate(request)
+	if err != nil {
+		return nil, err
+	}
+
 	conversation := &entity.Conversation{
 		CreatedAt: time.Now(),
 	}
@@ -32,7 +38,7 @@ func (s *conversationService) CreateConversation(request *model.CreateConversati
 		conversation.Participants = append(conversation.Participants, user)
 	}
 
-	err := s.conversationRepo.CreateConversation(conversation)
+	err = s.conversationRepo.CreateConversation(conversation)
 	if err != nil {
 		return nil, e.Internal(err)
 	}
