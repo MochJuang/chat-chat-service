@@ -15,11 +15,12 @@ type MessageService interface {
 }
 
 type messageService struct {
-	messageRepo repository.MessageRepository
+	conversationRepo repository.ConversationRepository
+	messageRepo      repository.MessageRepository
 }
 
-func NewMessageService(repo repository.MessageRepository) MessageService {
-	return &messageService{messageRepo: repo}
+func NewMessageService(messageRepo repository.MessageRepository, conversationRepo repository.ConversationRepository) MessageService {
+	return &messageService{messageRepo: messageRepo, conversationRepo: conversationRepo}
 }
 
 func (s *messageService) CreateMessage(request *model.CreateMessageRequest) (*model.MessageResponse, error) {
@@ -29,10 +30,15 @@ func (s *messageService) CreateMessage(request *model.CreateMessageRequest) (*mo
 		return nil, err
 	}
 
-	var conversation entity.Conversation
+	var conversation *entity.Conversation
+	conversation, err = s.conversationRepo.GetConversationByID(request.ConversationId)
+	if err != nil {
+		return nil, e.NotFound("Conversation not found")
+	}
+
 	message := &entity.Message{
 		ConversationID: conversation.ID,
-		SenderID:       request.UserID,
+		SenderID:       request.SenderId,
 		Content:        request.Content,
 		SendAt:         time.Now(),
 	}
@@ -41,8 +47,7 @@ func (s *messageService) CreateMessage(request *model.CreateMessageRequest) (*mo
 		return nil, e.Internal(err)
 	}
 
-	response := model.ToMessageResponse(message)
-	return response, nil
+	return model.ToMessageResponse(message), nil
 }
 
 func (s *messageService) GetMessages(conversationID int64) ([]*model.MessageResponse, error) {
@@ -51,9 +56,9 @@ func (s *messageService) GetMessages(conversationID int64) ([]*model.MessageResp
 		return nil, e.NotFound("Messages not found")
 	}
 
-	var response []*model.MessageResponse
+	var messageResponses []*model.MessageResponse
 	for _, message := range messages {
-		response = append(response, model.ToMessageResponse(message))
+		messageResponses = append(messageResponses, model.ToMessageResponse(message))
 	}
-	return response, nil
+	return messageResponses, nil
 }

@@ -20,6 +20,12 @@ func (h *MessageController) CreateMessage(c *fiber.Ctx) error {
 	if err := c.BodyParser(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
+	conversationId, err := c.ParamsInt("id")
+	if err != nil {
+		return e.Validation(err)
+	}
+
+	request.ConversationId = uint(conversationId)
 
 	message, err := h.MessageService.CreateMessage(request)
 	if err != nil {
@@ -30,7 +36,7 @@ func (h *MessageController) CreateMessage(c *fiber.Ctx) error {
 }
 
 func (h *MessageController) GetMessages(c *fiber.Ctx) error {
-	conversationID, err := c.ParamsInt("conversationID")
+	conversationID, err := c.ParamsInt("id")
 	if err != nil {
 		return e.Validation(err)
 	}

@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	ServerAddress string `mapstructure:"SERVER_ADDRESS"`
+	GrpcServer    string `mapstructure:"GRPC_SERVER"`
 	DBDriver      string `mapstructure:"DB_DRIVER"`
 	DBSource      string `mapstructure:"DB_SOURCE"`
 	JWTSecret     string `mapstructure:"JWT_SECRET"`
@@ -37,6 +38,7 @@ func LoadConfig() (Config, error) {
 		viper.SetDefault("DB_DRIVER", os.Getenv("DB_DRIVER"))
 		viper.SetDefault("DB_SOURCE", os.Getenv("DB_SOURCE"))
 		viper.SetDefault("JWT_SECRET", os.Getenv("JWT_SECRET"))
+		viper.SetDefault("GRPC_SERVER", os.Getenv("GRPC_SERVER"))
 	}
 
 	err = viper.Unmarshal(&cfg)

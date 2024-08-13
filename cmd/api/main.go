@@ -2,12 +2,12 @@ package main
 
 import (
 	"chat-service/internal/config"
+	grpcserver "chat-service/internal/delivery/grpc/server"
 	"chat-service/internal/delivery/http/route"
 	"chat-service/internal/repository/postgresql"
-	"log"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"log"
 )
 
 func main() {
@@ -32,6 +32,8 @@ func main() {
 	route.SetupRoutes(app, cfg)
 
 	// Setup error handler middleware
+
+	go grpcserver.SetupGrpc(cfg)
 
 	// Start server
 	log.Fatal(app.Listen(cfg.ServerAddress))
