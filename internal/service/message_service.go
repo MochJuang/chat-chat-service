@@ -6,6 +6,7 @@ import (
 	"chat-service/internal/model"
 	"chat-service/internal/repository"
 	"chat-service/internal/utils"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -31,14 +32,21 @@ func (s *messageService) CreateMessage(request *model.CreateMessageRequest) (*mo
 	}
 
 	var conversation *entity.Conversation
-	conversation, err = s.conversationRepo.GetConversationByID(request.ConversationId)
+	conversation, err = s.conversationRepo.GetConversationByUuid(request.ConversationUuid)
 	if err != nil {
 		return nil, e.NotFound("Conversation not found")
 	}
 
+	var sender *entity.User
+	sender, err = s.conversationRepo.GetUserByUuid(request.SenderUuid)
+	if err != nil {
+		return nil, e.NotFound("Sender not found")
+	}
+
 	message := &entity.Message{
 		ConversationID: conversation.ID,
-		SenderID:       request.SenderId,
+		UUID:           uuid.New().String(),
+		SenderID:       sender.ID,
 		Content:        request.Content,
 		SendAt:         time.Now(),
 	}

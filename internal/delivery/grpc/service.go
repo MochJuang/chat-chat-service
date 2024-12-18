@@ -22,14 +22,14 @@ func NewChatService(conversationService service.ConversationService, messageServ
 
 func (s *ChatService) AddMessageToConversation(ctx context.Context, req *chat.AddMessageRequest) (*chat.AddMessageResponse, error) {
 
-	conversation, err := s.conversationService.GetConversationByID(uint(req.ConversationId))
+	conversation, err := s.conversationService.GetConversationByUuid(req.ConversationUuid)
 	if err != nil {
 		return nil, err
 	}
 
 	isAuthorized := false
 	for _, participant := range conversation.Participants {
-		if uint(req.SenderId) == participant {
+		if req.SenderUuid == participant {
 			isAuthorized = true
 			break
 		}
@@ -42,9 +42,9 @@ func (s *ChatService) AddMessageToConversation(ctx context.Context, req *chat.Ad
 	}
 
 	request := &model.CreateMessageRequest{
-		ConversationId: uint(req.ConversationId),
-		SenderId:       uint(req.SenderId),
-		Content:        req.Content,
+		ConversationUuid: req.ConversationUuid,
+		SenderUuid:       req.SenderUuid,
+		Content:          req.Content,
 	}
 
 	if _, err = s.messageService.CreateMessage(request); err != nil {
@@ -61,17 +61,17 @@ func (s *ChatService) AddMessageToConversation(ctx context.Context, req *chat.Ad
 }
 
 func (s *ChatService) GetConversationDetails(ctx context.Context, req *chat.ConversationRequest) (*chat.ConversationResponse, error) {
-	conversation, err := s.conversationService.GetConversationByID(uint(req.ConversationId))
+	conversation, err := s.conversationService.GetConversationByUuid(req.ConversationUuid)
 	if err != nil {
 		return nil, err
 	}
 
 	response := &chat.ConversationResponse{
-		Id:        uint32(conversation.ID),
+		Uuid:      conversation.UUID,
 		CreatedAt: conversation.CreatedAt,
 	}
 	for _, participant := range conversation.Participants {
-		response.ParticipantIds = append(response.ParticipantIds, uint32(participant))
+		response.ParticipantUuids = append(response.ParticipantUuids, participant)
 	}
 
 	return response, nil

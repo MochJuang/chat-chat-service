@@ -30,7 +30,7 @@ func main() {
 
 	// Setup routes
 	route.SetupRoutes(app, cfg)
-
+	//postgresql.Migrate(db)
 	// Setup error handler middleware
 
 	go grpcserver.SetupGrpc(cfg)

@@ -18,7 +18,7 @@ func NewConversationHandler(service service.ConversationService) *ConversationHa
 func (h *ConversationHandler) CreateConversation(c *fiber.Ctx) error {
 	conversationDTO := new(model.CreateConversationRequest)
 	if err := c.BodyParser(conversationDTO); err != nil {
-		return e.Validation(err)
+		return e.BadRequest(err)
 	}
 
 	conversation, err := h.ConversationService.CreateConversation(conversationDTO)
@@ -29,13 +29,10 @@ func (h *ConversationHandler) CreateConversation(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(conversation)
 }
 
-func (h *ConversationHandler) GetConversationByID(c *fiber.Ctx) error {
-	conversationID, err := c.ParamsInt("conversationID")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid conversation ID"})
-	}
+func (h *ConversationHandler) GetConversationByUuid(c *fiber.Ctx) error {
+	conversationID := c.Params("conversationID")
 
-	conversation, err := h.ConversationService.GetConversationByID(uint(conversationID))
+	conversation, err := h.ConversationService.GetConversationByUuid(conversationID)
 	if err != nil {
 		return err
 	}

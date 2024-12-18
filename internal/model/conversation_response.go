@@ -3,20 +3,20 @@ package model
 import "chat-service/internal/entity"
 
 type ConversationResponse struct {
-	ID           uint   `json:"id"`
-	Participants []uint `json:"participants"`
-	CreatedAt    string `json:"created_at"`
+	UUID         string   `json:"uuid"`
+	Participants []string `json:"participants"`
+	CreatedAt    string   `json:"created_at"`
 }
 
 func ToConversationResponse(conversation *entity.Conversation) *ConversationResponse {
-	participantIds := make([]uint, len(conversation.Participants))
+	participantIds := make([]string, len(conversation.Participants))
 	for i, participant := range conversation.Participants {
-		participantIds[i] = participant.ID
+		participantIds[i] = participant.UUID
 
 	}
 
 	return &ConversationResponse{
-		ID:           conversation.ID,
+		UUID:         conversation.UUID,
 		Participants: participantIds,
 		CreatedAt:    conversation.CreatedAt.Format("2006-01-02 15:04:05"),
 	}

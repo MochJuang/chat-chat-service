@@ -18,7 +18,7 @@ func NewFileUploadController(service service.FileUploadService) *FileUploadContr
 func (h *FileUploadController) UploadFile(c *fiber.Ctx) error {
 	fileDTO := new(model.CreateFileUploadRequest)
 	if err := c.BodyParser(fileDTO); err != nil {
-		return e.Validation(err)
+		return e.BadRequest(err)
 	}
 
 	file, err := h.FileUploadService.UploadFile(fileDTO)

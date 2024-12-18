@@ -9,9 +9,17 @@ import (
 const IsHttpError = true
 const (
 	TypeErrorNotFound     = "NotFound"
+	TypeErrorBadRequest   = "BadRequest"
 	TypeErrorValidation   = "Validation"
 	TypeErrorUnauthorized = "Unauthorized"
 	TypeErrorInternal     = "Internal"
+)
+
+var (
+	NotFoundError     = NotFound("")
+	BadRequestError   = BadRequest("")
+	InternalError     = Internal("")
+	UnauthorizedError = Unauthorized("")
 )
 
 type Err struct {
@@ -41,7 +49,22 @@ func Convert(err error) (Err, error) {
 }
 
 func HandleHttpErrorFiber(c *fiber.Ctx, err error) error {
-	var msg, _ = Convert(err)
+	var msg, _err = Convert(err)
+
+	if _err != nil {
+		log.Println(err.Error())
+		log.Println("Error parsing error message middleware")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error"})
+	}
+
 	log.Println(msg)
-	return c.Status(msg.ErrorCode).JSON(fiber.Map{"errors": msg.Message})
+
+	switch msg.ErrorType {
+	case TypeErrorValidation:
+		var validationsErr []map[string]interface{}
+		_ = json.Unmarshal([]byte(msg.Message), &validationsErr)
+		return c.Status(msg.ErrorCode).JSON(fiber.Map{"errors": validationsErr})
+	default:
+		return c.Status(msg.ErrorCode).JSON(fiber.Map{"message": msg.Message})
+	}
 }

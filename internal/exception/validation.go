@@ -4,11 +4,19 @@ import "encoding/json"
 
 type ErrValidation Err
 
-func Validation(err error) ErrValidation {
+func Validation(err interface{}) ErrValidation {
+	var msg string
+	switch err.(type) {
+	case string:
+		msg = err.(string)
+	case error:
+		msg = err.(error).Error()
+	}
+
 	return ErrValidation{
 		ErrorType: TypeErrorValidation,
 		ErrorCode: 400,
-		Message:   err.Error(),
+		Message:   msg,
 	}
 }
 

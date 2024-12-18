@@ -4,11 +4,19 @@ import "encoding/json"
 
 type ErrInternal Err
 
-func Internal(err error) ErrInternal {
+func Internal(err interface{}) ErrInternal {
+	var msg string
+	switch err.(type) {
+	case string:
+		msg = err.(string)
+	case error:
+		msg = err.(error).Error()
+	}
+
 	return ErrInternal{
 		ErrorCode: 500,
 		ErrorType: TypeErrorInternal,
-		Message:   err.Error(),
+		Message:   msg,
 	}
 }
 

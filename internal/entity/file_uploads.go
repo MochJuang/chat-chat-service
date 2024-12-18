@@ -6,6 +6,7 @@ import (
 
 type FileUpload struct {
 	ID        uint      `gorm:"primaryKey"`
+	UUID      string    `gorm:"unique;not null"`
 	UserID    uint      `gorm:"not null"`
 	User      User      `gorm:"foreignKey:UserID"`
 	Type      string    `gorm:"not null"` // Type can be something like "profile_picture", "attachment", etc.

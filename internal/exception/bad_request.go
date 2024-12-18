@@ -2,9 +2,9 @@ package exception
 
 import "encoding/json"
 
-type ErrNotFound Err
+type ErrBadRequest Err
 
-func NotFound(err interface{}) ErrNotFound {
+func BadRequest(err interface{}) ErrBadRequest {
 	var msg string
 	switch err.(type) {
 	case string:
@@ -13,14 +13,14 @@ func NotFound(err interface{}) ErrNotFound {
 		msg = err.(error).Error()
 	}
 
-	return ErrNotFound{
-		ErrorType: TypeErrorNotFound,
-		ErrorCode: 404,
+	return ErrBadRequest{
+		ErrorType: TypeErrorBadRequest,
+		ErrorCode: 400,
 		Message:   msg,
 	}
 }
 
-func (e ErrNotFound) Error() string {
+func (e ErrBadRequest) Error() string {
 	var msg string
 	if IsHttpError {
 		payload, _ := json.Marshal(e)

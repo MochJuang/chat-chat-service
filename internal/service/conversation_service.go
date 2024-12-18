@@ -6,12 +6,15 @@ import (
 	"chat-service/internal/model"
 	"chat-service/internal/repository"
 	"chat-service/internal/utils"
+	"errors"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"time"
 )
 
 type ConversationService interface {
 	CreateConversation(request *model.CreateConversationRequest) (*model.ConversationResponse, error)
-	GetConversationByID(conversationID uint) (*model.ConversationResponse, error)
+	GetConversationByUuid(conversationUuid string) (*model.ConversationResponse, error)
 	GetAllConversations() ([]*model.ConversationResponse, error)
 }
 
@@ -28,17 +31,37 @@ func (s *conversationService) CreateConversation(request *model.CreateConversati
 	if err != nil {
 		return nil, err
 	}
-
+	cvsUuid := uuid.New().String()
 	conversation := &entity.Conversation{
+		UUID:      cvsUuid,
 		CreatedAt: time.Now(),
+		Type:      entity.ConversationTypePrivate,
 	}
 
+	var userIds []uint
 	for _, userID := range request.Participants {
-		user := entity.User{ID: userID}
-		conversation.Participants = append(conversation.Participants, user)
+		user, err := s.conversationRepo.GetUserByUuid(userID)
+		if err != nil {
+			return nil, e.NotFound("user not found")
+		}
+
+		conversation.Participants = append(conversation.Participants, *user)
+		userIds = append(userIds, user.ID)
 	}
 
-	err = s.conversationRepo.CreateConversation(conversation)
+	err = s.conversationRepo.CheckExistingConversation(conversation)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, e.Internal(err)
+	}
+
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		err = s.conversationRepo.CreateConversation(conversation)
+		if err != nil {
+			return nil, e.Internal(err)
+		}
+	}
+
+	conversation, err = s.conversationRepo.GetConversationByUuid(conversation.UUID)
 	if err != nil {
 		return nil, e.Internal(err)
 	}
@@ -47,8 +70,8 @@ func (s *conversationService) CreateConversation(request *model.CreateConversati
 	return response, nil
 }
 
-func (s *conversationService) GetConversationByID(conversationID uint) (*model.ConversationResponse, error) {
-	conversation, err := s.conversationRepo.GetConversationByID(conversationID)
+func (s *conversationService) GetConversationByUuid(conversationUuid string) (*model.ConversationResponse, error) {
+	conversation, err := s.conversationRepo.GetConversationByUuid(conversationUuid)
 	if err != nil {
 		return nil, e.NotFound("conversation not found")
 	}

@@ -33,7 +33,7 @@ func SetupRoutes(app *fiber.App, cfg config.Config) {
 	app.Get("/conversations/:id/messages/", messageController.GetMessages)
 
 	app.Post("/conversations", conversationController.CreateConversation)
-	app.Get("/conversations/:conversationID", conversationController.GetConversationByID)
+	app.Get("/conversations/:conversationID", conversationController.GetConversationByUuid)
 	app.Get("/conversations", conversationController.GetAllConversations)
 
 	app.Post("/files", fileUploadController.UploadFile)

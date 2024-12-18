@@ -4,11 +4,19 @@ import "encoding/json"
 
 type ErrUnauthorized Err
 
-func Unauthorized(err error) ErrUnauthorized {
+func Unauthorized(err interface{}) ErrUnauthorized {
+	var msg string
+	switch err.(type) {
+	case string:
+		msg = err.(string)
+	case error:
+		msg = err.(error).Error()
+	}
+
 	return ErrUnauthorized{
 		ErrorType: TypeErrorUnauthorized,
 		ErrorCode: 401,
-		Message:   err.Error(),
+		Message:   msg,
 	}
 }
 

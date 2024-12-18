@@ -6,6 +6,7 @@ import (
 
 type Message struct {
 	ID             uint         `gorm:"primaryKey"`
+	UUID           string       `gorm:"unique;not null"`
 	SenderID       uint         `gorm:"not null"`
 	Sender         User         `gorm:"foreignKey:SenderID"`
 	ConversationID uint         `gorm:"not null"`
